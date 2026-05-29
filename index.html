@@ -34,6 +34,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      position: sticky;
+      top: 0;
     }
 
     .title {
@@ -42,7 +44,7 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 950px;
       margin: auto;
       padding: 20px;
       display: grid;
@@ -55,9 +57,24 @@
       border-radius: 12px;
     }
 
-    a {
-      color: var(--accent);
-      text-decoration: none;
+    .news-item {
+      margin-bottom: 15px;
+      padding: 14px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+    }
+
+    body.light .news-item {
+      background: rgba(0,0,0,0.05);
+    }
+
+    .small {
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    h3 {
+      margin-top: 0;
     }
 
     button {
@@ -69,26 +86,9 @@
       color: white;
     }
 
-    img {
-      width: 100%;
-      border-radius: 10px;
-      margin-top: 10px;
-    }
-
-    .small {
-      font-size: 13px;
-      opacity: 0.8;
-    }
-
-    .news-item {
-      margin-bottom: 15px;
-      padding: 12px;
-      border-radius: 10px;
-      background: rgba(255,255,255,0.05);
-    }
-
-    body.light .news-item {
-      background: rgba(0,0,0,0.05);
+    a {
+      color: var(--accent);
+      text-decoration: none;
     }
   </style>
 </head>
@@ -102,27 +102,27 @@
 
 <div class="container">
 
-  <!-- KALENDERWOCHE -->
+  <!-- Kalenderwoche -->
   <div class="card">
     <h2>Kalenderwoche</h2>
     <div id="week"></div>
   </div>
 
-  <!-- SATZ DER WOCHE (FEST) -->
+  <!-- Satz der Woche -->
   <div class="card">
     <h2>Satz der Woche</h2>
-    <div id="sentence">
+    <div>
       Kleine Schritte führen zu großen Veränderungen
     </div>
   </div>
 
-  <!-- WORT DES TAGES -->
+  <!-- Wort des Tages -->
   <div class="card">
     <h2>Wort des Tages</h2>
     <div id="word">Lade Wort...</div>
   </div>
 
-  <!-- NEWS -->
+  <!-- News -->
   <div class="card">
     <h2>News</h2>
     <div id="news">Lade News...</div>
@@ -132,7 +132,43 @@
 
 <script>
 
-const RSS_PROXY = "https://api.rss2json.com/v1/api.json?rss_url=";
+const RSS_PROXY =
+  "https://api.rss2json.com/v1/api.json?rss_url=";
+
+/*
+========================================
+EIGENE NEWS HINZUFÜGEN
+========================================
+
+Neue News einfach hier hinzufügen.
+
+Beispiel:
+
+{
+  title: "Meine Überschrift",
+  date: "29.05.2026 14:30",
+  description: "Meine Beschreibung"
+},
+
+*/
+
+const customNews = [
+
+  {
+    title: "InfoHub gestartet",
+    date: "29.05.2026 10:00",
+    description:
+      "Die neue InfoHub Website ist jetzt online."
+  },
+
+  {
+    title: "Neue Funktionen geplant",
+    date: "29.05.2026 11:15",
+    description:
+      "Dark Mode, mehr News und weitere Widgets sind geplant."
+  }
+
+];
 
 // DARK MODE
 function toggleMode() {
@@ -141,63 +177,125 @@ function toggleMode() {
 
 // KALENDERWOCHE
 function getWeekNumber(d) {
-  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  d = new Date(
+    Date.UTC(
+      d.getFullYear(),
+      d.getMonth(),
+      d.getDate()
+    )
+  );
+
   const dayNum = d.getUTCDay() || 7;
+
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-  return weekNo;
+
+  const yearStart = new Date(
+    Date.UTC(d.getUTCFullYear(), 0, 1)
+  );
+
+  return Math.ceil(
+    (((d - yearStart) / 86400000) + 1) / 7
+  );
 }
 
 function loadWeek() {
   const week = getWeekNumber(new Date());
+
   document.getElementById("week").innerHTML =
     "Kalenderwoche: <b>" + week + "</b>";
 }
 
-// WORD OF THE DAY
+// WORT DES TAGES
 async function loadWord() {
+
   try {
-    const url = RSS_PROXY + encodeURIComponent("https://www.merriam-webster.com/wotd/feed/rss2");
+
+    const url =
+      RSS_PROXY +
+      encodeURIComponent(
+        "https://www.merriam-webster.com/wotd/feed/rss2"
+      );
+
     const res = await fetch(url);
+
     const data = await res.json();
 
     const item = data.items[0];
 
     document.getElementById("word").innerHTML = `
       <h3>${item.title}</h3>
-      <p class="small">${item.description}</p>
-      <a href="${item.link}" target="_blank">Mehr</a>
+      <p class="small">${item.pubDate}</p>
+      <p>${item.description}</p>
     `;
+
   } catch (e) {
-    document.getElementById("word").innerHTML = "Fehler beim Laden.";
+
+    document.getElementById("word").innerHTML =
+      "Fehler beim Laden.";
+
   }
+
 }
 
 // NEWS
 async function loadNews() {
+
   try {
-    const url = RSS_PROXY + encodeURIComponent("https://www.tagesschau.de/xml/rss2");
+
+    const url =
+      RSS_PROXY +
+      encodeURIComponent(
+        "https://www.tagesschau.de/xml/rss2"
+      );
+
     const res = await fetch(url);
+
     const data = await res.json();
 
     let html = "";
 
-    data.items.slice(0, 50).forEach(item => {
+    // EIGENE NEWS
+    customNews.forEach(item => {
+
       html += `
         <div class="news-item">
           <h3>${item.title}</h3>
-          <p class="small">${item.pubDate}</p>
-          <p>${item.description || ""}</p>
+          <p class="small">${item.date}</p>
+          <p>${item.description}</p>
         </div>
       `;
+
     });
 
-    document.getElementById("news").innerHTML = html;
+    // TAGESSCHAU NEWS (50)
+    data.items.slice(0, 50).forEach(item => {
+
+      html += `
+        <div class="news-item">
+          <h3>${item.title}</h3>
+
+          <p class="small">
+            ${item.pubDate}
+          </p>
+
+          <p>
+            ${item.description || ""}
+          </p>
+        </div>
+      `;
+
+    });
+
+    document.getElementById("news").innerHTML =
+      html;
 
   } catch (e) {
-    document.getElementById("news").innerHTML = "Fehler beim Laden.";
+
+    document.getElementById("news").innerHTML =
+      "Fehler beim Laden.";
+
   }
+
 }
 
 // START
