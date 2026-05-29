@@ -102,13 +102,11 @@
 
 <div class="container">
 
-  <!-- Kalenderwoche -->
   <div class="card">
     <h2>Kalenderwoche</h2>
     <div id="week"></div>
   </div>
 
-  <!-- Satz der Woche -->
   <div class="card">
     <h2>Satz der Woche</h2>
     <div>
@@ -116,13 +114,11 @@
     </div>
   </div>
 
-  <!-- Wort des Tages -->
   <div class="card">
     <h2>Wort des Tages</h2>
     <div id="word">Lade Wort...</div>
   </div>
 
-  <!-- News -->
   <div class="card">
     <h2>News</h2>
     <div id="news">Lade News...</div>
@@ -135,37 +131,13 @@
 const RSS_PROXY =
   "https://api.rss2json.com/v1/api.json?rss_url=";
 
-/*
-========================================
-EIGENE NEWS HINZUFÜGEN
-========================================
-
-Neue News einfach hier hinzufügen.
-
-Beispiel:
-
-{
-  title: "Meine Überschrift",
-  date: "29.05.2026 14:30",
-  description: "Meine Beschreibung"
-},
-
-*/
-
 const customNews = [
-
-  {
-    title: "InfoHub gestartet",
-    date: "29.05.2026 10:00",
-    description:
-      "Die neue InfoHub Website ist jetzt online."
-  },
 
   {
     title: "Hide and Seek entfällt",
     date: "29.05.2026 11:15",
     description:
-      "Das am 20.6.2026 geplante "Hide and Seek" im Dorf Middelsfähr fällt laut Organisator wegen mangelnden Teilnehmern wahrscheinlich aus."
+      "Das am 20.6.2026 geplante 'Hide and Seek' im Dorf Middelsfähr fällt laut Organisator wegen mangelnden Teilnehmern wahrscheinlich aus."
   }
 
 ];
@@ -177,6 +149,7 @@ function toggleMode() {
 
 // KALENDERWOCHE
 function getWeekNumber(d) {
+
   d = new Date(
     Date.UTC(
       d.getFullYear(),
@@ -196,13 +169,16 @@ function getWeekNumber(d) {
   return Math.ceil(
     (((d - yearStart) / 86400000) + 1) / 7
   );
+
 }
 
 function loadWeek() {
+
   const week = getWeekNumber(new Date());
 
   document.getElementById("week").innerHTML =
     "Kalenderwoche: <b>" + week + "</b>";
+
 }
 
 // WORT DES TAGES
@@ -267,7 +243,7 @@ async function loadNews() {
 
     });
 
-    // TAGESSCHAU NEWS (50)
+    // TAGESSCHAU NEWS
     data.items.slice(0, 50).forEach(item => {
 
       html += `
