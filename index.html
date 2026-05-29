@@ -102,31 +102,21 @@
 
 <div class="container">
 
+  <!-- WOCHE + SATZ -->
+  <div class="card">
+    <h2>📅 Kalenderwoche</h2>
+    <div id="week"></div>
+  </div>
+
+  <div class="card">
+    <h2>💬 Satz der Woche</h2>
+    <div id="sentence">Lade Satz...</div>
+  </div>
+
   <!-- NEWS -->
   <div class="card">
-    <h2>ARD / Tagesschau News</h2>
+    <h2>📰 News</h2>
     <div id="news">Lade News...</div>
-  </div>
-
-  <!-- NASA APOD -->
-  <div class="card">
-    <h2>Bild des Tages (NASA)</h2>
-    <div id="apod">Lade Bild...</div>
-  </div>
-
-  <!-- WORD OF THE DAY -->
-  <div class="card">
-    <h2>Wort des Tages</h2>
-    <div id="word">Lade Wort...</div>
-  </div>
-
-  <!-- LINKS -->
-  <div class="card">
-    <h2>Meine Links</h2>
-
-  
-    <a href="https://lamacos.github.io" target="_blank">Hauptseite</a>
-
   </div>
 
 </div>
@@ -135,12 +125,47 @@
 
 const RSS_PROXY = "https://api.rss2json.com/v1/api.json?rss_url=";
 
-// DARK / LIGHT MODE
+// DARK MODE
 function toggleMode() {
   document.body.classList.toggle("light");
 }
 
-// NEWS (Tagesschau)
+// KALENDERWOCHE
+function getWeekNumber(d) {
+  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return weekNo;
+}
+
+function loadWeek() {
+  const week = getWeekNumber(new Date());
+  document.getElementById("week").innerHTML =
+    "Kalenderwoche: <b>" + week + "</b>";
+}
+
+// SATZ DER WOCHE (ONLINE)
+async function loadSentence() {
+  const fallback = "Kleine Schritte führen zu großen Veränderungen";
+
+  try {
+    const res = await fetch("https://lamacos.github.io/lamacOs-Kurzbefehle");
+    const text = await res.text();
+
+    // versucht ersten sinnvollen Satz zu nehmen
+    const cleaned = text.replace(/[\n\r]+/g, " ").trim();
+    const sentence = cleaned.length > 0 ? cleaned : fallback;
+
+    document.getElementById("sentence").innerText = sentence;
+
+  } catch (e) {
+    document.getElementById("sentence").innerText = fallback;
+  }
+}
+
+// NEWS (Beispiel Tagesschau)
 async function loadNews() {
   try {
     const url = RSS_PROXY + encodeURIComponent("https://www.tagesschau.de/xml/rss2");
@@ -149,13 +174,12 @@ async function loadNews() {
 
     let html = "";
 
-    data.items.slice(0, 6).forEach(item => {
+    data.items.slice(0, 5).forEach(item => {
       html += `
         <div class="news-item">
           <h3>${item.title}</h3>
           <p class="small">${item.pubDate}</p>
-          <p>${item.description || "Keine Vorschau verfügbar."}</p>
-          <a href="${item.link}" target="_blank">Original öffnen</a>
+          <p>${item.description || ""}</p>
         </div>
       `;
     });
@@ -163,52 +187,14 @@ async function loadNews() {
     document.getElementById("news").innerHTML = html;
 
   } catch (e) {
-    document.getElementById("news").innerHTML = "Fehler beim Laden der News.";
+    document.getElementById("news").innerHTML = "Fehler beim Laden.";
   }
 }
 
-// NASA APOD
-async function loadAPOD() {
-  try {
-    const url = RSS_PROXY + encodeURIComponent("https://apod.nasa.gov/apod.rss");
-    const res = await fetch(url);
-    const data = await res.json();
-
-    const item = data.items[0];
-
-    document.getElementById("apod").innerHTML = `
-      <h3>${item.title}</h3>
-      <img src="${item.enclosure.link}" />
-      <p class="small">${item.pubDate}</p>
-    `;
-  } catch (e) {
-    document.getElementById("apod").innerHTML = "Fehler beim Laden.";
-  }
-}
-
-// WORD OF THE DAY
-async function loadWord() {
-  try {
-    const url = RSS_PROXY + encodeURIComponent("https://www.merriam-webster.com/wotd/feed/rss2");
-    const res = await fetch(url);
-    const data = await res.json();
-
-    const item = data.items[0];
-
-    document.getElementById("word").innerHTML = `
-      <h3>${item.title}</h3>
-      <p class="small">${item.description}</p>
-      <a href="${item.link}" target="_blank">Mehr</a>
-    `;
-  } catch (e) {
-    document.getElementById("word").innerHTML = "Fehler beim Laden.";
-  }
-}
-
-// LOAD ALL
+// START
+loadWeek();
+loadSentence();
 loadNews();
-loadAPOD();
-loadWord();
 
 </script>
 
