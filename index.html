@@ -183,7 +183,7 @@ async function loadNews() {
 
     let html = "";
 
-    data.items.slice(0, 5).forEach(item => {
+    data.items.slice(0, 50).forEach(item => {
       html += `
         <div class="news-item">
           <h3>${item.title}</h3>
