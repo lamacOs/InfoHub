@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>InfoHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #ffffff;
+      --accent: #38bdf8;
+    }
+
+    body.light {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --accent: #2563eb;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: 0.3s;
+    }
+
+    header {
+      padding: 18px;
+      background: var(--card);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      padding: 15px;
+      border-radius: 12px;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+    }
+
+    img {
+      width: 100%;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    .small {
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    .news-item {
+      margin-bottom: 15px;
+      padding: 12px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+    }
+
+    body.light .news-item {
+      background: rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="title">InfoHub</div>
+  <button onclick="toggleMode()">Dark / Light</button>
+</header>
+
+<div class="container">
+
+  <!-- NEWS -->
+  <div class="card">
+    <h2>📰 ARD / Tagesschau News</h2>
+    <div id="news">Lade News...</div>
+  </div>
+
+  <!-- NASA APOD -->
+  <div class="card">
+    <h2>🖼️ Bild des Tages (NASA)</h2>
+    <div id="apod">Lade Bild...</div>
+  </div>
+
+  <!-- WORD OF THE DAY -->
+  <div class="card">
+    <h2>📚 Wort des Tages</h2>
+    <div id="word">Lade Wort...</div>
+  </div>
+
+  <!-- LINKS -->
+  <div class="card">
+    <h2>🔗 Meine Links</h2>
+
+    <p class="small">Beispiel 1:</p>
+    <a href="https://deine-seite.de" target="_blank">Meine Website</a>
+
+    <p class="small">Beispiel 2:</p>
+    <a href="https://youtube.com" target="_blank">Mein YouTube</a>
+
+  </div>
+
+</div>
+
+<script>
+
+const RSS_PROXY = "https://api.rss2json.com/v1/api.json?rss_url=";
+
+// DARK / LIGHT MODE
+function toggleMode() {
+  document.body.classList.toggle("light");
+}
+
+// NEWS (Tagesschau)
+async function loadNews() {
+  try {
+    const url = RSS_PROXY + encodeURIComponent("https://www.tagesschau.de/xml/rss2");
+    const res = await fetch(url);
+    const data = await res.json();
+
+    let html = "";
+
+    data.items.slice(0, 6).forEach(item => {
+      html += `
+        <div class="news-item">
+          <h3>${item.title}</h3>
+          <p class="small">${item.pubDate}</p>
+          <p>${item.description || "Keine Vorschau verfügbar."}</p>
+          <a href="${item.link}" target="_blank">Original öffnen</a>
+        </div>
+      `;
+    });
+
+    document.getElementById("news").innerHTML = html;
+
+  } catch (e) {
+    document.getElementById("news").innerHTML = "Fehler beim Laden der News.";
+  }
+}
+
+// NASA APOD
+async function loadAPOD() {
+  try {
+    const url = RSS_PROXY + encodeURIComponent("https://apod.nasa.gov/apod.rss");
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const item = data.items[0];
+
+    document.getElementById("apod").innerHTML = `
+      <h3>${item.title}</h3>
+      <img src="${item.enclosure.link}" />
+      <p class="small">${item.pubDate}</p>
+    `;
+  } catch (e) {
+    document.getElementById("apod").innerHTML = "Fehler beim Laden.";
+  }
+}
+
+// WORD OF THE DAY
+async function loadWord() {
+  try {
+    const url = RSS_PROXY + encodeURIComponent("https://www.merriam-webster.com/wotd/feed/rss2");
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const item = data.items[0];
+
+    document.getElementById("word").innerHTML = `
+      <h3>${item.title}</h3>
+      <p class="small">${item.description}</p>
+      <a href="${item.link}" target="_blank">Mehr</a>
+    `;
+  } catch (e) {
+    document.getElementById("word").innerHTML = "Fehler beim Laden.";
+  }
+}
+
+// LOAD ALL
+loadNews();
+loadAPOD();
+loadWord();
+
+</script>
+
+</body>
+</html>
