@@ -102,20 +102,29 @@
 
 <div class="container">
 
-  <!-- WOCHE + SATZ -->
+  <!-- KALENDERWOCHE -->
   <div class="card">
-    <h2>📅 Kalenderwoche</h2>
+    <h2>Kalenderwoche</h2>
     <div id="week"></div>
   </div>
 
+  <!-- SATZ DER WOCHE (FEST) -->
   <div class="card">
-    <h2>💬 Satz der Woche</h2>
-    <div id="sentence">Lade Satz...</div>
+    <h2>Satz der Woche</h2>
+    <div id="sentence">
+      Kleine Schritte führen zu großen Veränderungen
+    </div>
+  </div>
+
+  <!-- WORT DES TAGES -->
+  <div class="card">
+    <h2>Wort des Tages</h2>
+    <div id="word">Lade Wort...</div>
   </div>
 
   <!-- NEWS -->
   <div class="card">
-    <h2>📰 News</h2>
+    <h2>News</h2>
     <div id="news">Lade News...</div>
   </div>
 
@@ -146,26 +155,26 @@ function loadWeek() {
     "Kalenderwoche: <b>" + week + "</b>";
 }
 
-// SATZ DER WOCHE (ONLINE)
-async function loadSentence() {
-  const fallback = "Kleine Schritte führen zu großen Veränderungen";
-
+// WORD OF THE DAY
+async function loadWord() {
   try {
-    const res = await fetch("https://lamacos.github.io/lamacOs-Kurzbefehle");
-    const text = await res.text();
+    const url = RSS_PROXY + encodeURIComponent("https://www.merriam-webster.com/wotd/feed/rss2");
+    const res = await fetch(url);
+    const data = await res.json();
 
-    // versucht ersten sinnvollen Satz zu nehmen
-    const cleaned = text.replace(/[\n\r]+/g, " ").trim();
-    const sentence = cleaned.length > 0 ? cleaned : fallback;
+    const item = data.items[0];
 
-    document.getElementById("sentence").innerText = sentence;
-
+    document.getElementById("word").innerHTML = `
+      <h3>${item.title}</h3>
+      <p class="small">${item.description}</p>
+      <a href="${item.link}" target="_blank">Mehr</a>
+    `;
   } catch (e) {
-    document.getElementById("sentence").innerText = fallback;
+    document.getElementById("word").innerHTML = "Fehler beim Laden.";
   }
 }
 
-// NEWS (Beispiel Tagesschau)
+// NEWS
 async function loadNews() {
   try {
     const url = RSS_PROXY + encodeURIComponent("https://www.tagesschau.de/xml/rss2");
@@ -193,7 +202,7 @@ async function loadNews() {
 
 // START
 loadWeek();
-loadSentence();
+loadWord();
 loadNews();
 
 </script>
